@@ -22,6 +22,16 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    const db = client.db("talent_bridge");
+    const jobsCollection = db.collection("jobs");
+
+    // save a job data in db
+    app.post("/add-job", async (req, res) => {
+      const jobData = req.body;
+      const result = await jobsCollection.insertOne(jobData);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
