@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 
 import { Link } from "react-router-dom";
+import { format } from "date-fns";
 
 const JobCard = ({ job }) => {
   const {
@@ -22,7 +23,8 @@ const JobCard = ({ job }) => {
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-light text-gray-800 ">
-          Deadline: {deadline}
+          Deadline: {format(new Date(deadline), "dd/MM/yyyy")}
+          {/* Deadline: {format(new Date(deadline), "P")} */}
         </span>
         <span className="px-3 py-1 text-[8px] text-blue-800 uppercase bg-blue-200 rounded-full ">
           {category}
