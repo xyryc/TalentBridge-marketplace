@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { AuthContext } from "../providers/AuthProvider";
 import axios from "axios";
 import { format } from "date-fns";
+import { toast } from "react-hot-toast";
 
 const MyPostedJobs = () => {
   const { user } = useContext(AuthContext);
@@ -13,13 +14,54 @@ const MyPostedJobs = () => {
   }, [user]);
 
   const fetchAllJobs = async () => {
-    const { data } = await axios.get(
-      `${import.meta.env.VITE_API_URL}/jobs/${user?.email}`
-    );
-    setJobs(data);
+    try {
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_API_URL}/jobs/${user.email}`
+      );
+      setJobs(data);
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
   };
 
-  console.log(jobs);
+  const handleDelete = async (id) => {
+    try {
+      const { data } = await axios.delete(
+        `${import.meta.env.VITE_API_URL}/job/${id}`
+      );
+      toast.success("Deleted Successfully!");
+      fetchAllJobs();
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
+
+  const confirmDelete = (id) => {
+    toast((t) => (
+      <div className="flex items-center gap-3">
+        <p>Are you sure?</p>
+        <div className="space-x-1">
+          <button
+            className="btn btn-error btn-xs text-white"
+            onClick={() =>{
+              handleDelete(id)
+              toast.dismiss(t.id)
+            }}
+          >
+            Yes
+          </button>
+          <button
+            className="btn btn-success btn-xs text-white"
+            onClick={() => toast.dismiss(t.id)}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ));
+  };
 
   return (
     <section className="container px-4 mx-auto pt-12">
@@ -27,7 +69,7 @@ const MyPostedJobs = () => {
         <h2 className="text-lg font-medium text-gray-800 ">My Posted Jobs</h2>
 
         <span className="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full ">
-          {jobs.length} Job
+          {jobs?.length} Job
         </span>
       </div>
 
@@ -83,33 +125,36 @@ const MyPostedJobs = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200 ">
                   {jobs.map((job) => (
-                    <tr key={job._id}>
+                    <tr key={job?._id}>
                       <td className="px-4 py-4 text-sm text-gray-500  whitespace-nowrap">
-                        {job.title}
+                        {job?.title}
                       </td>
 
                       <td className="px-4 py-4 text-sm text-gray-500  whitespace-nowrap">
-                        {format(new Date(job.deadline), "dd/MM/yyyy")}
+                        {format(new Date(job?.deadline), "dd/MM/yyyy")}
                       </td>
 
                       <td className="px-4 py-4 text-sm text-gray-500  whitespace-nowrap">
-                        ${job.min_price}-${job.max_price}
+                        ${job?.min_price}-${job?.max_price}
                       </td>
                       <td className="px-4 py-4 text-sm whitespace-nowrap">
                         <div className="flex items-center gap-x-2">
                           <p
                             className={`px-3 py-1  text-blue-500 bg-blue-100/60 text-xs  rounded-full`}
                           >
-                            {job.category}
+                            {job?.category}
                           </p>
                         </div>
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-500  whitespace-nowrap">
-                        {job.description.substring(0, 18)}...
+                        {job?.description.substring(0, 18)}...
                       </td>
                       <td className="px-4 py-4 text-sm whitespace-nowrap">
                         <div className="flex items-center gap-x-6">
-                          <button className="text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none">
+                          <button
+                            onClick={() => confirmDelete(job?._id)}
+                            className="text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none"
+                          >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
