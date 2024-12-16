@@ -93,6 +93,7 @@ const AddJob = () => {
                 className="border p-2 rounded-md"
                 selected={startDate}
                 onChange={(date) => setStartDate(date)}
+                dateFormat="dd/MM/yyyy"
               />
             </div>
 

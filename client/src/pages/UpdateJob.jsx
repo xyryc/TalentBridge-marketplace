@@ -10,7 +10,7 @@ const UpdateJob = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [startDate, setStartDate] = useState(new Date());
-  const [job, setJob] = useState([]);
+  const [job, setJob] = useState({});
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
