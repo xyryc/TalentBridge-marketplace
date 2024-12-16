@@ -62,6 +62,24 @@ async function run() {
       res.send(result);
     });
 
+    app.put("/update-job/:id", async (req, res) => {
+      const id = req.params.id;
+      const jobData = req.body;
+
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: jobData,
+      };
+      const options = { upsert: true };
+
+      const result = await jobsCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(

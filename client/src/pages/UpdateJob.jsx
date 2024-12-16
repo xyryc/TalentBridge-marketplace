@@ -1,14 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { AuthContext } from "../providers/AuthProvider";
 
 const UpdateJob = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [startDate, setStartDate] = useState(new Date());
   const [job, setJob] = useState([]);
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     fetchJob();
@@ -28,7 +31,47 @@ const UpdateJob = () => {
     }
   };
 
-  console.log(job);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const title = form.job_title.value;
+    const email = form.email.value;
+    const category = form.category.value;
+    const deadline = startDate;
+    const min_price = parseFloat(form.min_price.value);
+    const max_price = parseFloat(form.max_price.value);
+    const description = form.description.value;
+
+    const formData = {
+      title,
+      buyer: {
+        email,
+        name: user?.displayName,
+        photo: user?.photoURL,
+      },
+      category,
+      deadline,
+      min_price,
+      max_price,
+      description,
+      bid_count: job.bid_count,
+    };
+
+    // make a post request
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/update-job/${id}`,
+        formData
+      );
+      form.reset();
+      toast.success("Data updated successfully!");
+      navigate("/my-posted-jobs");
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
 
   return (
     <div className="flex justify-center items-center min-h-[calc(100vh-306px)] my-12">
@@ -37,7 +80,7 @@ const UpdateJob = () => {
           Update a Job
         </h2>
 
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-6 mt-4 sm:grid-cols-2">
             <div>
               <label className="text-gray-700 " htmlFor="job_title">
