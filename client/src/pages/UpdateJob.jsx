@@ -44,6 +44,7 @@ const UpdateJob = () => {
                 Job Title
               </label>
               <input
+                defaultValue={job.title}
                 id="job_title"
                 name="job_title"
                 type="text"
@@ -56,6 +57,7 @@ const UpdateJob = () => {
                 Email Address
               </label>
               <input
+                defaultValue={job?.buyer?.email}
                 id="emailAddress"
                 type="email"
                 name="email"
@@ -73,25 +75,30 @@ const UpdateJob = () => {
               />
             </div>
 
-            <div className="flex flex-col gap-2 ">
-              <label className="text-gray-700 " htmlFor="category">
-                Category
-              </label>
-              <select
-                name="category"
-                id="category"
-                className="border p-2 rounded-md"
-              >
-                <option value="Web Development">Web Development</option>
-                <option value="Graphics Design">Graphics Design</option>
-                <option value="Digital Marketing">Digital Marketing</option>
-              </select>
-            </div>
+            {job.category && (
+              <div className="flex flex-col gap-2 ">
+                <label className="text-gray-700 " htmlFor="category">
+                  Category
+                </label>
+                <select
+                  name="category"
+                  id="category"
+                  defaultValue={job?.category}
+                  className="border p-2 rounded-md"
+                >
+                  <option value="Web Development">Web Development</option>
+                  <option value="Graphics Design">Graphics Design</option>
+                  <option value="Digital Marketing">Digital Marketing</option>
+                </select>
+              </div>
+            )}
+
             <div>
               <label className="text-gray-700 " htmlFor="min_price">
                 Minimum Price
               </label>
               <input
+                defaultValue={job.min_price}
                 id="min_price"
                 name="min_price"
                 type="number"
@@ -104,6 +111,7 @@ const UpdateJob = () => {
                 Maximum Price
               </label>
               <input
+                defaultValue={job.max_price}
                 id="max_price"
                 name="max_price"
                 type="number"
@@ -116,6 +124,7 @@ const UpdateJob = () => {
               Description
             </label>
             <textarea
+              defaultValue={job.description}
               className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md  focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40  focus:outline-none focus:ring"
               name="description"
               id="description"
