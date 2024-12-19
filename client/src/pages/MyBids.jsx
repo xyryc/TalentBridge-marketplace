@@ -25,6 +25,28 @@ const MyBids = () => {
     }
   };
 
+  const handleStatusChange = async (bidId, prevStatus, status) => {
+    if (prevStatus !== "In Progress") return console.log("Not allowed");
+
+    try {
+      const { data } = await axios.patch(
+        `${import.meta.env.VITE_API_URL}/update-bid-status/${bidId}`,
+        { status }
+      );
+      if (data.modifiedCount > 0) {
+        toast.success("Status updated");
+      } else {
+        toast.error("Update failed");
+      }
+
+      // refresh UI
+      fetchMyBids();
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
+
   return (
     <section className="container px-4 mx-auto my-12">
       <div className="flex items-center gap-x-3">
@@ -89,7 +111,11 @@ const MyBids = () => {
                 <tbody className="bg-white divide-y divide-gray-200 ">
                   {/* map the bids */}
                   {bids.map((bid) => (
-                    <BidTableRow key={bid._id} bid={bid} />
+                    <BidTableRow
+                      key={bid._id}
+                      bid={bid}
+                      handleStatusChange={handleStatusChange}
+                    />
                   ))}
                 </tbody>
               </table>
