@@ -110,8 +110,16 @@ async function run() {
 
     // get all bids data by email for logged in user
     app.get("/bids/:email", async (req, res) => {
+      const isBuyer = req.query.buyer;
       const email = req.params.email;
-      const query = { email };
+
+      let query = {};
+      if (isBuyer) {
+        query.buyer = email;
+      } else {
+        query.email = email;
+      }
+
       const result = await bidsCollection.find(query).toArray();
       res.send(result);
     });

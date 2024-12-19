@@ -74,6 +74,7 @@ const JobDetails = () => {
       title,
       category,
       status: "Pending",
+      buyer: buyer?.email,
     };
 
     // make a post request
