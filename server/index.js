@@ -24,6 +24,7 @@ async function run() {
   try {
     const db = client.db("talent_bridge");
     const jobsCollection = db.collection("jobs");
+    const bidsCollection = db.collection("bids");
 
     // save a job data in db
     app.post("/add-job", async (req, res) => {
@@ -77,6 +78,14 @@ async function run() {
         updatedDoc,
         options
       );
+      res.send(result);
+    });
+
+    // bidding related queries
+    // save a bid data in db
+    app.post("/add-bid", async (req, res) => {
+      const bidData = req.body;
+      const result = await bidsCollection.insertOne(bidData);
       res.send(result);
     });
 

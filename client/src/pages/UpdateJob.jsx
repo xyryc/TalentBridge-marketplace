@@ -57,6 +57,7 @@ const UpdateJob = () => {
       description,
       bid_count: job.bid_count,
     };
+    // console.table(formData)
 
     // make a post request
     try {
@@ -115,6 +116,7 @@ const UpdateJob = () => {
                 className="border p-2 rounded-md"
                 selected={startDate}
                 onChange={(date) => setStartDate(date)}
+                dateFormat="dd/MM/yyyy"
               />
             </div>
 
