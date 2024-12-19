@@ -89,9 +89,11 @@ async function run() {
     // Ensures that the client will close when you finish/error
   }
 }
+
 run().catch(console.dir);
+
 app.get("/", (req, res) => {
-  res.send("Hello from SoloSphere Server....");
+  res.send("TalentBridge server running");
 });
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
