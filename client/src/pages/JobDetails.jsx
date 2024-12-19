@@ -65,7 +65,16 @@ const JobDetails = () => {
     if (compareAsc(new Date(startDate), new Date(deadline)) === 1)
       return toast.error("Offer a date within deadline");
 
-    const bidData = { price, email, comment, deadline: startDate, jobId };
+    const bidData = {
+      price,
+      email,
+      comment,
+      deadline: startDate,
+      jobId,
+      title,
+      category,
+      status: "Pending",
+    };
 
     // make a post request
     try {
