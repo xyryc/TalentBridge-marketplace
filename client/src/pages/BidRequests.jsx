@@ -9,11 +9,11 @@ const BidRequests = () => {
   const [bids, setBids] = useState([]);
 
   useEffect(() => {
-    fetchMyBids();
+    fetchAllBids();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  const fetchMyBids = async () => {
+  const fetchAllBids = async () => {
     try {
       const { data } = await axios.get(
         `${import.meta.env.VITE_API_URL}/bids/${user.email}?buyer=true`
@@ -25,7 +25,27 @@ const BidRequests = () => {
     }
   };
 
-  console.log(bids);
+  const handleStatusChange = async (bidId, prevStatus, status) => {
+    if (prevStatus === status || prevStatus === "Completed")
+      return console.log("Not allowed");
+
+    try {
+      const { data } = await axios.patch(
+        `${import.meta.env.VITE_API_URL}/update-bid-status/${bidId}`,
+        { status }
+      );
+      if (data.modifiedCount > 0) {
+        toast.success("Status updated");
+      } else {
+        toast.error("Update failed");
+      }
+
+      // refresh UI
+      fetchAllBids();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <section className="container px-4 mx-auto my-12">
@@ -98,7 +118,11 @@ const BidRequests = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200 ">
                   {bids.map((bid) => (
-                    <BidRequestsTableRow key={bid._id} bid={bid} />
+                    <BidRequestsTableRow
+                      key={bid._id}
+                      bid={bid}
+                      handleStatusChange={handleStatusChange}
+                    />
                   ))}
                 </tbody>
               </table>

@@ -124,6 +124,20 @@ async function run() {
       res.send(result);
     });
 
+    // update bid status
+    app.patch("/update-bid-status/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const { status } = req.body;
+      const updated = {
+        $set: {
+          status: status,
+        },
+      };
+      const result = await bidsCollection.updateOne(filter, updated);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
