@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../providers/AuthProvider";
-import axios from "axios";
 import { toast } from "react-hot-toast";
 import BidRequestsTableRow from "../components/BidRequestsTableRow";
 import useAxiosSecure from "../hooks/useAxiosSecure";
@@ -17,7 +16,7 @@ const BidRequests = () => {
 
   const fetchAllBids = async () => {
     try {
-      const { data } = await axiosSecure(`/bids/${user.email}?buyer=true`);
+      const { data } = await axiosSecure.get(`/bids/${user.email}?buyer=true`);
       setBids(data);
     } catch (error) {
       console.log(error);
@@ -30,7 +29,7 @@ const BidRequests = () => {
       return console.log("Not allowed");
 
     try {
-      const { data } = await axios.patch(
+      const { data } = await axiosSecure.patch(
         `${import.meta.env.VITE_API_URL}/update-bid-status/${bidId}`,
         { status }
       );

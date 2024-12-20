@@ -6,8 +6,10 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../providers/AuthProvider";
 import { toast } from "react-hot-toast";
+import useAxiosSecure from "../hooks/useAxiosSecure";
 
 const JobDetails = () => {
+  const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const [startDate, setStartDate] = useState(new Date());
@@ -79,7 +81,7 @@ const JobDetails = () => {
 
     // make a post request
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/add-bid`, bidData);
+      await axiosSecure.post(`/add-bid`, bidData);
       // form.reset();
       toast.success("Bid successful!");
       navigate("/my-bids");

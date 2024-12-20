@@ -5,8 +5,10 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../providers/AuthProvider";
+import useAxiosSecure from "../hooks/useAxiosSecure";
 
 const UpdateJob = () => {
+  const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
   const { id } = useParams();
   const [startDate, setStartDate] = useState(new Date());
@@ -61,10 +63,7 @@ const UpdateJob = () => {
 
     // make a post request
     try {
-      await axios.put(
-        `${import.meta.env.VITE_API_URL}/update-job/${id}`,
-        formData
-      );
+      await axiosSecure.put(`/update-job/${id}`, formData);
       form.reset();
       toast.success("Data updated successfully!");
       navigate("/my-posted-jobs");
