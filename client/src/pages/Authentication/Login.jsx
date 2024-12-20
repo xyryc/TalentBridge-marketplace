@@ -31,7 +31,7 @@ const Login = () => {
     const form = e.target;
     const email = form.email.value;
     const pass = form.password.value;
-    console.log({ email, pass });
+    // console.log({ email, pass });
     try {
       //User Login
       await signIn(email, pass);

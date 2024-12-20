@@ -53,10 +53,11 @@ const Navbar = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/my-posted-jobs">My Posted Jobs</Link>
-              </li>
-              <li>
                 <Link to="/my-bids">My Bids</Link>
+              </li>
+
+              <li>
+                <Link to="/my-posted-jobs">My Posted Jobs</Link>
               </li>
               <li>
                 <Link to="/bid-requests">Bid Requests</Link>
