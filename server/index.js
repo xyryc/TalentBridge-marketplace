@@ -79,7 +79,7 @@ async function run() {
     });
 
     // save a job data in db
-    app.post("/add-job", async (req, res) => {
+    app.post("/add-job", verifyToken, async (req, res) => {
       const jobData = req.body;
       const result = await jobsCollection.insertOne(jobData);
       res.send(result);
@@ -92,15 +92,22 @@ async function run() {
     });
 
     // get all jobs posted by specific user
-    app.get("/jobs/:email", async (req, res) => {
+    app.get("/jobs/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
+      const decodedEmail = req.user?.email;
+
+      // console.log("decoded email --> ", decodedEmail);
+      // console.log("user email --> ", email);
+      if (decodedEmail !== email)
+        return res.status(403).send({ message: "Access forbidden" });
+
       const query = { "buyer.email": email };
       const result = await jobsCollection.find(query).toArray();
       res.send(result);
     });
 
     // delete a job
-    app.delete("/job/:id", async (req, res) => {
+    app.delete("/job/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await jobsCollection.deleteOne(query);
@@ -115,7 +122,7 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/update-job/:id", async (req, res) => {
+    app.put("/update-job/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const jobData = req.body;
 
@@ -135,7 +142,7 @@ async function run() {
 
     // bidding related queries
     // save a bid data in db
-    app.post("/add-bid", async (req, res) => {
+    app.post("/add-bid", verifyToken, async (req, res) => {
       const bidData = req.body;
 
       // 0. if a user placed a bid already in this job
@@ -162,9 +169,9 @@ async function run() {
 
     // get all bids data by email for logged in user
     app.get("/bids/:email", verifyToken, async (req, res) => {
-      const decodedEmail = req.user?.email;
       const isBuyer = req.query.buyer;
       const email = req.params.email;
+      const decodedEmail = req.user?.email;
 
       // console.log("decoded email --> ", decodedEmail);
       // console.log("user email --> ", email);
@@ -183,7 +190,7 @@ async function run() {
     });
 
     // update bid status
-    app.patch("/update-bid-status/:id", async (req, res) => {
+    app.patch("/update-bid-status/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const { status } = req.body;
