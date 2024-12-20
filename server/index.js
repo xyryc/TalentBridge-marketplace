@@ -79,7 +79,7 @@ async function run() {
     });
 
     // save a job data in db
-    app.post("/add-job", verifyToken, async (req, res) => {
+    app.post("/add-job", async (req, res) => {
       const jobData = req.body;
       const result = await jobsCollection.insertOne(jobData);
       res.send(result);
