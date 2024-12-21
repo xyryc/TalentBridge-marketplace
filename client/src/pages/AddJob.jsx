@@ -1,16 +1,32 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { AuthContext } from "../providers/AuthProvider";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import useAxiosSecure from "../hooks/useAxiosSecure";
 
 const AddJob = () => {
+  const queryClient = useQueryClient();
   const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const [startDate, setStartDate] = useState(new Date());
+
+  const { isLoading, mutateAsync } = useMutation({
+    mutationFn: async (jobData) => {
+      await axiosSecure.post(`/add-job`, jobData);
+    },
+    onSuccess: () => {
+      toast.success("Job added");
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    },
+    onError: () => {
+      toast.error("Error occured while adding job");
+    },
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,13 +58,13 @@ const AddJob = () => {
 
     // make a post request
     try {
-      await axiosSecure.post(`/add-job`, formData);
+      await mutateAsync(formData);
       form.reset();
-      toast.success("Data added successfully!");
+      // toast.success("Data added successfully!");
       navigate("/my-posted-jobs");
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      // toast.error(error.message);
     }
   };
 
@@ -148,7 +164,7 @@ const AddJob = () => {
           </div>
           <div className="flex justify-end mt-6">
             <button className="disabled:cursor-not-allowed px-8 py-2.5 leading-5 text-white transition-colors duration-300 transhtmlForm bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600">
-              Save
+              {isLoading ? "Saving..." : "Save"}
             </button>
           </div>
         </form>
