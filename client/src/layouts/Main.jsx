@@ -5,7 +5,7 @@ import ScrollToTop from "../components/ScrollToTop";
 
 const Main = () => {
   return (
-    <div>
+    <div className="font-lato">
       {/* Navbar */}
       <Navbar />
 

@@ -107,7 +107,7 @@ const JobDetails = () => {
         </div>
 
         <div>
-          <h1 className="mt-2 text-3xl font-semibold text-gray-800 ">
+          <h1 className="mt-2 text-3xl font-semibold text-gray-800 font-ubuntu">
             {title}
           </h1>
 

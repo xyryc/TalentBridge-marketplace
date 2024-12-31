@@ -7,7 +7,11 @@ import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "./LoadingSpinner";
 
 const TabCategories = () => {
-  const { data:jobs, isLoading, isError } = useQuery({
+  const {
+    data: jobs,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["jobs"],
     queryFn: async () => {
       const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/jobs`);
@@ -19,14 +23,14 @@ const TabCategories = () => {
     return <LoadingSpinner />;
   }
 
-  if(isError){
-    return
+  if (isError) {
+    return;
   }
 
   return (
     <Tabs>
       <div className=" container px-6 py-10 mx-auto">
-        <h1 className="text-2xl font-semibold text-center text-gray-800 capitalize lg:text-3xl ">
+        <h1 className="text-2xl font-semibold text-center text-gray-800 capitalize lg:text-3xl font-ubuntu">
           Browse Jobs By Categories
         </h1>
 
