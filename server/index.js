@@ -9,7 +9,11 @@ const port = process.env.PORT || 9000;
 const app = express();
 
 const corsOptions = {
-  origin: ["http://localhost:5173"],
+  origin: [
+    "http://localhost:5173",
+    "https://talentbridge-marketplace.web.app",
+    "https://talentbridge-marketplace.firebaseapp.com",
+  ],
   credentials: true,
   optionalSuccessStatus: 200,
 };
@@ -45,195 +49,187 @@ const verifyToken = (req, res, next) => {
 };
 
 async function run() {
-  try {
-    const db = client.db("talent_bridge");
-    const jobsCollection = db.collection("jobs");
-    const bidsCollection = db.collection("bids");
+  // try {
+  const db = client.db("talent_bridge");
+  const jobsCollection = db.collection("jobs");
+  const bidsCollection = db.collection("bids");
 
-    // generate jwt
-    app.post("/jwt", async (req, res) => {
-      const email = req.body;
-      // create token
-      const token = jwt.sign(email, process.env.SECRET_KEY, {
-        expiresIn: "1h",
-      });
-
-      res
-        .cookie("token", token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-        })
-        .send({ success: true });
+  // generate jwt
+  app.post("/jwt", async (req, res) => {
+    const email = req.body;
+    // create token
+    const token = jwt.sign(email, process.env.SECRET_KEY, {
+      expiresIn: "1h",
     });
 
-    // logout || clear cookie from browser
-    app.get("/logout", async (req, res) => {
-      res
-        .clearCookie("token", {
-          maxAge: 0,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-        })
-        .send({ success: true });
-    });
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      })
+      .send({ success: true });
+  });
 
-    // save a job data in db
-    app.post("/add-job", async (req, res) => {
-      const jobData = req.body;
-      const result = await jobsCollection.insertOne(jobData);
-      res.send(result);
-    });
+  // logout || clear cookie from browser
+  app.get("/logout", async (req, res) => {
+    res
+      .clearCookie("token", {
+        maxAge: 0,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      })
+      .send({ success: true });
+  });
 
-    // get all jobs data
-    app.get("/jobs", async (req, res) => {
-      const result = await jobsCollection.find().toArray();
-      res.send(result);
-    });
+  // save a job data in db
+  app.post("/add-job", async (req, res) => {
+    const jobData = req.body;
+    const result = await jobsCollection.insertOne(jobData);
+    res.send(result);
+  });
 
-    // get all jobs posted by specific user
-    app.get("/jobs/:email", verifyToken, async (req, res) => {
-      const email = req.params.email;
-      const decodedEmail = req.user?.email;
+  // get all jobs data
+  app.get("/jobs", async (req, res) => {
+    const result = await jobsCollection.find().toArray();
+    res.send(result);
+  });
 
-      // console.log("decoded email --> ", decodedEmail);
-      // console.log("user email --> ", email);
-      if (decodedEmail !== email)
-        return res.status(403).send({ message: "Access forbidden" });
+  // get all jobs posted by specific user
+  app.get("/jobs/:email", verifyToken, async (req, res) => {
+    const email = req.params.email;
+    const decodedEmail = req.user?.email;
 
-      const query = { "buyer.email": email };
-      const result = await jobsCollection.find(query).toArray();
-      res.send(result);
-    });
+    // console.log("decoded email --> ", decodedEmail);
+    // console.log("user email --> ", email);
+    if (decodedEmail !== email)
+      return res.status(403).send({ message: "Access forbidden" });
 
-    // delete a job
-    app.delete("/job/:id", verifyToken, async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await jobsCollection.deleteOne(query);
-      res.send(result);
-    });
+    const query = { "buyer.email": email };
+    const result = await jobsCollection.find(query).toArray();
+    res.send(result);
+  });
 
-    // get a single job data by id
-    app.get("/job/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await jobsCollection.findOne(query);
-      res.send(result);
-    });
+  // delete a job
+  app.delete("/job/:id", verifyToken, async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const result = await jobsCollection.deleteOne(query);
+    res.send(result);
+  });
 
-    app.put("/update-job/:id", verifyToken, async (req, res) => {
-      const id = req.params.id;
-      const jobData = req.body;
+  // get a single job data by id
+  app.get("/job/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const result = await jobsCollection.findOne(query);
+    res.send(result);
+  });
 
-      const filter = { _id: new ObjectId(id) };
-      const updatedDoc = {
-        $set: jobData,
-      };
-      const options = { upsert: true };
+  app.put("/update-job/:id", verifyToken, async (req, res) => {
+    const id = req.params.id;
+    const jobData = req.body;
 
-      const result = await jobsCollection.updateOne(
-        filter,
-        updatedDoc,
-        options
-      );
-      res.send(result);
-    });
+    const filter = { _id: new ObjectId(id) };
+    const updatedDoc = {
+      $set: jobData,
+    };
+    const options = { upsert: true };
 
-    // bidding related queries
-    // save a bid data in db
-    app.post("/add-bid", verifyToken, async (req, res) => {
-      const bidData = req.body;
+    const result = await jobsCollection.updateOne(filter, updatedDoc, options);
+    res.send(result);
+  });
 
-      // 0. if a user placed a bid already in this job
-      const query = { email: bidData.email, jobId: bidData.jobId };
-      const alreadyExist = await bidsCollection.findOne(query);
-      // console.log("Already exist", alreadyExist);
-      if (alreadyExist)
-        return res
-          .status(400)
-          .send("You have already placed a bid on this job!");
+  // bidding related queries
+  // save a bid data in db
+  app.post("/add-bid", verifyToken, async (req, res) => {
+    const bidData = req.body;
 
-      // 1. Save data is bids collection
-      const result = await bidsCollection.insertOne(bidData);
+    // 0. if a user placed a bid already in this job
+    const query = { email: bidData.email, jobId: bidData.jobId };
+    const alreadyExist = await bidsCollection.findOne(query);
+    // console.log("Already exist", alreadyExist);
+    if (alreadyExist)
+      return res.status(400).send("You have already placed a bid on this job!");
 
-      // 2. Increase bid count in jobs collection
-      const filter = { _id: new ObjectId(bidData.jobId) };
-      const update = {
-        $inc: { bid_count: 1 },
-      };
-      const updateBidCount = await jobsCollection.updateOne(filter, update);
+    // 1. Save data is bids collection
+    const result = await bidsCollection.insertOne(bidData);
 
-      res.send(result);
-    });
+    // 2. Increase bid count in jobs collection
+    const filter = { _id: new ObjectId(bidData.jobId) };
+    const update = {
+      $inc: { bid_count: 1 },
+    };
+    const updateBidCount = await jobsCollection.updateOne(filter, update);
 
-    // get all bids data by email for logged in user
-    app.get("/bids/:email", verifyToken, async (req, res) => {
-      const isBuyer = req.query.buyer;
-      const email = req.params.email;
-      const decodedEmail = req.user?.email;
+    res.send(result);
+  });
 
-      // console.log("decoded email --> ", decodedEmail);
-      // console.log("user email --> ", email);
-      if (decodedEmail !== email)
-        return res.status(403).send({ message: "Access forbidden" });
+  // get all bids data by email for logged in user
+  app.get("/bids/:email", verifyToken, async (req, res) => {
+    const isBuyer = req.query.buyer;
+    const email = req.params.email;
+    const decodedEmail = req.user?.email;
 
-      let query = {};
-      if (isBuyer) {
-        query.buyer = email;
-      } else {
-        query.email = email;
-      }
+    // console.log("decoded email --> ", decodedEmail);
+    // console.log("user email --> ", email);
+    if (decodedEmail !== email)
+      return res.status(403).send({ message: "Access forbidden" });
 
-      const result = await bidsCollection.find(query).toArray();
-      res.send(result);
-    });
+    let query = {};
+    if (isBuyer) {
+      query.buyer = email;
+    } else {
+      query.email = email;
+    }
 
-    // update bid status
-    app.patch("/update-bid-status/:id", verifyToken, async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const { status } = req.body;
-      const updated = {
-        $set: {
-          status: status,
-        },
-      };
-      const result = await bidsCollection.updateOne(filter, updated);
-      res.send(result);
-    });
+    const result = await bidsCollection.find(query).toArray();
+    res.send(result);
+  });
 
-    // get all jobs
-    app.get("/all-jobs", async (req, res) => {
-      const filter = req.query.filter;
-      const search = req.query.search;
-      const sort = req.query.sort;
+  // update bid status
+  app.patch("/update-bid-status/:id", verifyToken, async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) };
+    const { status } = req.body;
+    const updated = {
+      $set: {
+        status: status,
+      },
+    };
+    const result = await bidsCollection.updateOne(filter, updated);
+    res.send(result);
+  });
 
-      let options = {};
-      if (sort) options = { sort: { deadline: sort === "asc" ? 1 : -1 } };
+  // get all jobs
+  app.get("/all-jobs", async (req, res) => {
+    const filter = req.query.filter;
+    const search = req.query.search;
+    const sort = req.query.sort;
 
-      let query = {
-        title: {
-          $regex: search,
-          $options: "i",
-        },
-      };
-      if (filter) {
-        query.category = filter;
-      }
+    let options = {};
+    if (sort) options = { sort: { deadline: sort === "asc" ? 1 : -1 } };
 
-      const result = await jobsCollection.find(query, options).toArray();
-      res.send(result);
-    });
+    let query = {
+      title: {
+        $regex: search,
+        $options: "i",
+      },
+    };
+    if (filter) {
+      query.category = filter;
+    }
 
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
-  } finally {
-    // Ensures that the client will close when you finish/error
-  }
+    const result = await jobsCollection.find(query, options).toArray();
+    res.send(result);
+  });
+
+  // Send a ping to confirm a successful connection
+  // await client.db("admin").command({ ping: 1 });
+  // console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  // } finally {
+  // Ensures that the client will close when you finish/error
+  // }
 }
 
 run().catch(console.dir);
